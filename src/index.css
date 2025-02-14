@@ -13,6 +13,18 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add Miracode font */
+@font-face {
+  font-family: 'Miracode';
+  src: url('./fonts/Miracode.tff') format('ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
