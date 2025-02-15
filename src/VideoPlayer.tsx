@@ -1,144 +1,115 @@
 // Import required dependencies
-// React is our main framework
-// useState lets us manage state in our component
-// useEffect lets us perform side effects (like loading YouTube API)
 import React, { useState, useEffect } from 'react';
-
-// Import icons from lucide-react library
-// These will be our UI icons for controls
-import { Moon, Sun, Play, Pause, SkipForward } from 'lucide-react';
-
-// Define what props our volume icons will accept
-// '?' means the prop is optional
-interface VolumeIconProps {
-  className?: string;  // Optional CSS class name
-}
-
-// Custom SVG icon for volume up button
-// We use React.FC (Function Component) with our props interface
-const VolumeUpIcon: React.FC<VolumeIconProps> = ({ className }) => (
-  // SVG element with inherited className and current text color
-  <svg viewBox="0 0 512 512" className={className} fill="currentColor">
-    <g>
-      {/* Speaker shape - the main speaker icon */}
-      <path d="M272,0h-48L80,160H32c-17.672,0-32,14.326-32,32v128c0,17.672,14.328,32,32,32h48l144,160h48c8.836,0,16-7.164,16-16V16
-        C288,7.164,280.836,0,272,0z"/>
-      {/* Plus symbol - indicates volume increase */}
-      <path d="M480,224h-32v-32c0-17.672-14.328-32-32-32s-32,14.328-32,32v32h-32c-17.672,0-32,14.328-32,32s14.328,32,32,32h32v32
-        c0,17.672,14.328,32,32,32s32-14.328,32-32v-32h32c17.672,0,32-14.328,32-32S497.672,224,480,224z"/>
-    </g>
-  </svg>
-);
-
-// Custom SVG icon for volume down button
-// Similar to VolumeUpIcon but with a minus instead of plus
-const VolumeDownIcon: React.FC<VolumeIconProps> = ({ className }) => (
-  <svg viewBox="0 0 512 512" className={className} fill="currentColor">
-    <g>
-      {/* Speaker shape - identical to VolumeUpIcon */}
-      <path d="M272,0h-48L80,160H32c-17.672,0-32,14.326-32,32v128c0,17.672,14.328,32,32,32h48l144,160h48c8.836,0,16-7.164,16-16V16
-        C288,7.164,280.836,0,272,0z"/>
-      {/* Minus symbol - indicates volume decrease */}
-      <path d="M480,224H352c-17.672,0-32,14.328-32,32s14.328,32,32,32h128c17.672,0,32-14.328,32-32S497.672,224,480,224z"/>
-    </g>
-  </svg>
-);
+import { Moon, Sun, Play, Pause, SkipForward, Volume1, Volume2 } from 'lucide-react';
 
 // Interface for shadow styles
-// Extends React's CSS Properties type
 interface ShadowStyle extends React.CSSProperties {
-  boxShadow?: string;     // CSS box shadow property
-  textShadow?: string;    // CSS text shadow property
-  zIndex: number;         // Layer ordering
-}
-
-// Interface for YouTube video metadata
-// Used when checking video dimensions
-interface VideoMetadata {
-  height: number;
-  width: number;
+  boxShadow?: string;
+  textShadow?: string;
+  zIndex: number;
 }
 
 // Main VideoPlayer component
 const VideoPlayer: React.FC = () => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
+
+  // Update container width on mount and window resize
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.offsetWidth;
+        setContainerWidth(width);
+      }
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
   // YouTube playlist ID - replace with your own
   const PLAYLIST_ID = 'PLGuEiIpCwgO1N8uHEq-v88e0_PPDhQJEu';
   
-  // State management using useState hooks
-  // Each state variable is defined with its type
-  const [darkMode, setDarkMode] = useState<boolean>(false);      // Dark/light theme toggle
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);    // Playing state
-  const [volume, setVolume] = useState<number>(5.0);             // Volume level (0-10)
-  const [isVertical, setIsVertical] = useState<boolean>(false);  // Video orientation
-  const [player, setPlayer] = useState<YT.Player | null>(null);  // YouTube player instance
+  // State management
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [volume, setVolume] = useState<number>(5.0);
+  const [player, setPlayer] = useState<YT.Player | null>(null);
+  const [playedVideos, setPlayedVideos] = useState<string[]>([]);
 
-  // useEffect hook for initialization
-  // Runs once when component mounts (empty dependency array)
+  // Initialize YouTube API
   useEffect(() => {
-    // Check if YouTube API is already loaded
     if (window.YT) {
       initializePlayer();
     } else {
-      // If not loaded, add the YouTube API script
       const tag = document.createElement('script');
       tag.src = 'https://www.youtube.com/iframe_api';
-      // Insert script before first existing script
       const firstScriptTag = document.getElementsByTagName('script')[0];
       firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-      // Set up callback for when API is ready
       window.onYouTubeIframeAPIReady = initializePlayer;
     }
   }, []);
 
   // Initialize YouTube player
   const initializePlayer = (): void => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const width = container.offsetWidth;
+    const height = (width * 9) / 16;
+
     // Create new player instance
     new window.YT.Player('youtube-player', {
-      height: '360',
-      width: '640',
+      height: String(height),
+      width: String(width),
       playerVars: {
         listType: 'playlist',
-        list: PLAYLIST_ID,    // Your playlist ID
-        controls: 0,          // Hide default controls
-        modestbranding: 1,    // Minimal YouTube branding
-        rel: 0               // Don't show related videos
+        list: PLAYLIST_ID,
+        controls: 0,
+        showinfo: 0, 
+        rel: 0,
+        fs: 0,
+        disablekb: 1,
+        playsinline: 1,
+        autoplay: 0,
+        cc_load_policy: 0,
       },
       events: {
-        // Called when player is ready
         onReady: (event: YT.PlayerEvent) => {
-          setPlayer(event.target);              // Store player reference
-          event.target.setVolume(volume * 10);  // Set initial volume
+          setPlayer(event.target);
+          event.target.setVolume(volume * 10);
+          playRandomVideo(event.target)
         },
-        // Called when video state changes
         onStateChange: (event: YT.OnStateChangeEvent) => {
-          // Update playing state
           setIsPlaying(event.data === window.YT.PlayerState.PLAYING);
-          // Check video orientation when playing starts
-          if (event.data === window.YT.PlayerState.PLAYING) {
-            checkVideoOrientation(event.target);
-          }
         }
       }
     });
   };
 
-  // Check if video is vertical (shorts) or horizontal
-  const checkVideoOrientation = async (player: YT.Player): Promise<void> => {
-    try {
-      // Get current video ID
-      const videoData = player.getVideoData();
-      const videoId = videoData.video_id;
-      // Fetch video metadata from YouTube
-      const response = await fetch(
-        `https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${videoId}&format=json`
-      );
-      const data: VideoMetadata = await response.json();
-      // Set vertical if height > width
-      setIsVertical(data.height > data.width);
-    } catch (error) {
-      console.error('Error checking video orientation:', error);
+  const playRandomVideo = (playerInstance: YT.Player | null = player): void => {
+    if(playerInstance){
+      const playlist = playerInstance.getPlaylist();
+      if(playlist){
+        let availableVideos = playlist.filter(videoId => !playedVideos.includes(videoId));
+
+        //reset playedVideos array once all had been played
+        if(availableVideos.length === 0){
+          setPlayedVideos([]);
+          availableVideos = playlist;
+        }
+
+        //select random vid from available vids
+        const randomIndex = Math.floor(Math.random() * availableVideos.length);
+        const selectedVideoId = availableVideos[randomIndex];
+
+        const playlistIndex = playlist.indexOf(selectedVideoId)
+        playerInstance.playVideoAt(playlistIndex);
+        setPlayedVideos(prev => [...prev, selectedVideoId]);
+      }
     }
-  };
+  }
 
   // Toggle video play/pause
   const togglePlayPause = (): void => {
@@ -153,56 +124,53 @@ const VideoPlayer: React.FC = () => {
 
   // Adjust volume level
   const adjustVolume = (amount: number): void => {
-    // Calculate new volume and restrict to 0-10 range
     const newVolume = parseFloat((volume + amount).toFixed(1));
     const clampedVolume = Math.min(Math.max(newVolume, 0), 10);
-    // Update state
     setVolume(clampedVolume);
-    // Update player volume (YouTube uses 0-100)
     if (player) {
       player.setVolume(clampedVolume * 10);
     }
   };
 
-  // Play random video from playlist
-  const playRandomVideo = (): void => {
-    if (player) {
-      const playlist = player.getPlaylist();
-      if (playlist) {
-        // Generate random index
-        const randomIndex = Math.floor(Math.random() * playlist.length);
-        // Play video at that index
-        player.playVideoAt(randomIndex);
-      }
-    }
-  };
-
-  // Define shadow styles for different elements
+  // Define shadow styles
   const titleShadowStyle: ShadowStyle = {
-    textShadow: '0 8px 30px rgba(0,0,0,0.35)',
+    textShadow: '0 8px 30px var(--color-shadow-strong)',
     zIndex: 2
   };
 
   const playerShadowStyle: ShadowStyle = {
-    boxShadow: '0 12px 50px 0 rgba(0,0,0,0.45)',
+    boxShadow: '0 4px 20px 0 var(--color-shadow)',
     zIndex: 1
   };
 
   const controlShadowStyle: ShadowStyle = {
-    boxShadow: '0 12px 50px 0 rgba(0,0,0,0.45)',
+    boxShadow: '0 4px 20px 0 var(--color-shadow)',
     zIndex: 2
   };
 
-  // Component render
+  // Dynamic styles based on theme
+  const getThemeStyles = () => ({
+    container: {
+      backgroundColor: darkMode ? 'var(--color-bg-primary-dark)' : 'var(--color-bg-primary-light)',
+      color: darkMode ? 'var(--color-text-primary-dark)' : 'var(--color-text-primary-light)',
+    },
+    control: {
+      backgroundColor: darkMode ? 'var(--color-bg-secondary-dark)' : 'var(--color-bg-secondary-light)',
+    },
+  });
+
+  const styles = getThemeStyles();
+
   return (
-    // Main container - applies dark mode classes
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'} font-[Miracode]`}>
-      <div className="container mx-auto px-4 py-8">
+    <div className="flex justify-center items-center w-full h-screen font-[Miracode] overflow-hidden" 
+         style={styles.container}>
+      <div className="w-full min-w-[640px] px-4 sm:px-6 lg:px-8">
         {/* Theme toggle button */}
         <div className="flex justify-end">
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+            className="p-2 rounded-full transition-colors hover:brightness-95 active:brightness-90"
+            style={styles.control}
           >
             {darkMode ? <Sun size={24} /> : <Moon size={24} />}
           </button>
@@ -210,91 +178,112 @@ const VideoPlayer: React.FC = () => {
 
         {/* Title */}
         <h1 
-          className="max-w-4xl mx-auto mb-8 text-5xl font-[Miracode] tracking-[1.5em] text-center"
+          className="w-full mb-8 text-4xl sm:text-5xl font-[Zector] tracking-[0.5em] text-center whitespace-nowrap"
           style={titleShadowStyle}
         >
-          F R I D A Y   T V
+          FRIDAY TV
         </h1>
 
-        <div className="max-w-4xl mx-auto flex flex-col items-center">
-          {/* Video container - adjusts size based on orientation */}
-          <div 
-            className={`relative bg-black rounded-lg overflow-hidden transition-all duration-500 ease-in-out ${
-              isVertical ? 'w-[360px]' : 'w-full'
-            }`}
-            style={{
-              aspectRatio: isVertical ? '9/16' : '16/9',
-              ...playerShadowStyle
-            }}
-          >
-            {/* YouTube player will be inserted here */}
-            <div id="youtube-player" className="absolute inset-0 w-full h-full" />
-          </div>
-
-          {/* Controls section */}
-          <div 
-            className={`mt-8 transition-all duration-500 ease-in-out ${
-              isVertical ? 'w-[360px]' : 'w-full'
-            }`}
-            style={{ position: 'relative', zIndex: 2 }}
-          >
-            {/* Control buttons grid */}
-            <div className="grid grid-cols-3 gap-8">
-              {/* Play/Pause button */}
+        <div className="w-full mx-auto flex flex-col items-center">
+          <div style={{ width: '100%', maxWidth: '1440px', margin: '0 auto' }}>
+            {/* Video container */}
+            <div 
+              ref={containerRef}
+              className="relative bg-black rounded-lg overflow-hidden"
+              style={{
+                height: `${(containerWidth * 9) / 16}px`,
+                ...playerShadowStyle
+              }}
+            >
               <div 
-                className={`p-3 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} flex justify-center items-center`}
-                style={controlShadowStyle}
-              >
+                id="youtube-player" 
+                className="absolute inset-0 w-full h-full"
+              />
+              <div 
+                className="absolute inset-0 z-10" 
+                style={{ pointerEvents: 'auto' }}
+                onClick={togglePlayPause}
+              />
+            </div>
+
+            {/* Controls section */}
+            <div 
+              className="mt-8"
+              style={{ 
+                position: 'relative', 
+                zIndex: 2,
+              }}
+            >
+              <div className="grid grid-cols-12 gap-4">
+                {/* Play/Pause button */}
                 <button
                   onClick={togglePlayPause}
-                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                  className="col-span-1 p-3 rounded-lg flex justify-center items-center w-full transition-colors hover:brightness-95 active:brightness-90"
+                  style={{
+                    ...styles.control,
+                    ...controlShadowStyle,
+                  }}
                   aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
-                  {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                  <div className="p-2">
+                    {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                  </div>
                 </button>
-              </div>
 
-              {/* Skip button */}
-              <div 
-                className={`p-3 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} flex justify-center items-center`}
-                style={controlShadowStyle}
-              >
-                <button
-                  onClick={playRandomVideo}
-                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                {/* Skip button */}
+                <button 
+                  onClick={() => playRandomVideo()}
+                  className="col-span-1 p-3 rounded-lg flex justify-center items-center w-full transition-colors hover:brightness-95 active:brightness-90"
+                  style={{
+                    ...styles.control,
+                    ...controlShadowStyle,
+                  }}
                   aria-label="Skip to random video"
                 >
-                  <SkipForward size={24} />
+                  <div className="p-2">
+                    <SkipForward size={24} />
+                  </div>
                 </button>
-              </div>
 
-              {/* Volume controls */}
-              <div 
-                className={`p-3 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} flex items-center justify-center gap-3`}
-                style={controlShadowStyle}
-              >
-                {/* Volume down button */}
-                <button
-                  onClick={() => adjustVolume(-0.1)}
-                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-                  aria-label="Decrease volume"
+                {/* Dummy button - spans 8 columns */}
+                <div
+                  className="col-span-8 p-3 rounded-lg"
+                  style={{
+                    ...styles.control,
+                    ...controlShadowStyle
+                  }}
+                />
+
+                {/* Volume controls */}
+                <div 
+                  className="col-span-2 p-2 rounded-lg flex items-center justify-between"
+                  style={{
+                    ...styles.control,
+                    ...controlShadowStyle
+                  }}
                 >
-                  <VolumeDownIcon className="w-5 h-5" />
-                </button>
-                
-                {/* Volume display */}
-                <span className="w-14 text-center text-lg" aria-label="Current volume">
-                  {volume.toFixed(1)}
-                </span>
-                
-                {/* Volume up button */}
-                <button
-                  onClick={() => adjustVolume(0.1)}
-                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-                  aria-label="Increase volume"
-                >
-                  <VolumeUpIcon className="w-5 h-5" />
-                </button>
+                  <button
+                    onClick={() => adjustVolume(-1)}
+                    className="p-1 flex justify-center items-center transition-colors rounded-lg hover:brightness-95 active:brightness-90"                
+                    aria-label="Decrease volume"
+                    style={styles.control}
+                  >
+                    <Volume1 className="w-6 h-5" />
+                  </button>
+                  
+                  <span className="w-14 text-center text-lg" aria-label="Current volume">
+                    {volume}
+                  </span>
+                  
+                  <button
+                    onClick={() => adjustVolume(1)}
+                    className="p-1 flex justify-center items-center transition-colors rounded-lg hover:brightness-95 active:brightness-90"
+                    aria-label="Increase volume"
+                    style={styles.control}
+                  >
+                    <Volume2 className="w-6 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -304,5 +293,4 @@ const VideoPlayer: React.FC = () => {
   );
 };
 
-// Export the component for use in other files
 export default VideoPlayer;

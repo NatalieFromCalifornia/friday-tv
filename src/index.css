@@ -2,79 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Add Miracode font */
+/* Font declaration */
 @font-face {
   font-family: 'Miracode';
-  src: url('./fonts/Miracode.tff') format('ttf');
+  src: url('./fonts/Miracode.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Zector';
+  src: url('./fonts/Zector.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
+/* Minimal global reset */
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
+/* Only global theme variables if needed */
+:root {
+  /* Light theme colors */
+  --color-bg-primary-light: #f3f4f6;    /* gray-100 */
+  --color-bg-secondary-light: #ffffff;   /* white */
+  --color-text-primary-light: #111827;   /* gray-900 */
+  --color-hover-light: #e5e7eb;         /* gray-200 */
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
+  /* Dark theme colors */
+  --color-bg-primary-dark: #111827;     /* gray-900 */
+  --color-bg-secondary-dark: #1f2937;   /* gray-800 */
+  --color-text-primary-dark: #ffffff;   /* white */
+  --color-hover-dark: #374151;         /* gray-700 */
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+  /* Accent colors */
+  --color-primary: #646cff;
+  --color-shadow: rgba(0, 0, 0, 0.25);
+  --color-shadow-strong: rgba(0, 0, 0, 0.35);
 }
