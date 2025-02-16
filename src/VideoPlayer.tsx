@@ -122,7 +122,6 @@ const VideoPlayer: React.FC = () => {
     }
   };
 
-
   const switchChannel = (newChannel: keyof typeof CHANNEL_PLAYLISTS): void => {
     // Destroy current player if it exists
     if (player) {
@@ -210,11 +209,19 @@ const VideoPlayer: React.FC = () => {
               className="absolute inset-0 w-full h-full"
             />
             {currentChannel !== 'MEALTIME' && (
-              <div 
-                className="absolute inset-0 z-10" 
-                style={{ pointerEvents: 'auto' }}
-                onClick={togglePlayPause}
-              />
+              <>
+                {/* Click overlay for most of the video area */}
+                <div 
+                  className="absolute inset-0 z-10" 
+                  style={{ pointerEvents: 'auto' }}
+                  onClick={togglePlayPause}
+                />
+                {/* Gap for ad skip button */}
+                <div 
+                  className="absolute bottom-0 right-0 w-36 h-28 z-0"
+                  style={{ pointerEvents: 'none' }}
+                />
+              </>
             )}
           </div>
         </div>
