@@ -78,68 +78,28 @@ const VideoPlayer: React.FC = () => {
     });
   };
 
-  const playRandomVideo = async (playerInstance: YT.Player | null = player): Promise<void> => {
-    if (playerInstance) {
+  const playRandomVideo = (playerInstance: YT.Player | null = player): void => {
+    if(playerInstance){
       const playlist = playerInstance.getPlaylist();
-      if (playlist) {
+      if(playlist){
         let availableVideos = playlist.filter(videoId => !playedVideos.includes(videoId));
-  
-        // Reset playedVideos array once all had been played
-        if (availableVideos.length === 0) {
+
+        //reset playedVideos array once all had been played
+        if(availableVideos.length === 0){
           setPlayedVideos([]);
           availableVideos = playlist;
         }
-  
-        // Try videos until we find an embeddable one
-        while (availableVideos.length > 0) {
-          const randomIndex = Math.floor(Math.random() * availableVideos.length);
-          const selectedVideoId = availableVideos[randomIndex];
-  
-          // Check if video is embeddable
-          const playlistIndex = playlist.indexOf(selectedVideoId);
-          playerInstance.playVideoAt(playlistIndex);
-          
-          // Wait a brief moment for the video to load
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          const isEmbeddable = await checkVideoEmbeddable();
-          
-          if (isEmbeddable) {
-            setPlayedVideos(prev => [...prev, selectedVideoId]);
-            return;
-          } else {
-            // Remove non-embeddable video from available videos and try again
-            availableVideos = availableVideos.filter(vid => vid !== selectedVideoId);
-          }
-        }
-        
-        // If we get here, no videos were embeddable
-        console.warn('No embeddable videos found in playlist');
+
+        //select random vid from available vids
+        const randomIndex = Math.floor(Math.random() * availableVideos.length);
+        const selectedVideoId = availableVideos[randomIndex];
+
+        const playlistIndex = playlist.indexOf(selectedVideoId)
+        playerInstance.playVideoAt(playlistIndex);
+        setPlayedVideos(prev => [...prev, selectedVideoId]);
       }
     }
-  };
-
-  const checkVideoEmbeddable = async (): Promise<boolean> => {
-    try {
-      const response = await player?.getVideoUrl();
-      // If we can't even get the URL, assume it's not embeddable
-      if (!response) return false;
-      
-      // Try to play the video - if it fails, it's not embeddable
-      await player?.playVideo();
-      const state = player?.getPlayerState();
-      
-      // If the video is in error state or unplayable, it's not embeddable
-      // YT.PlayerState.UNSTARTED is -1
-      // Error state is 150 but not in YT.PlayerState enum
-      if (state === undefined) return false;
-      if (state === YT.PlayerState.UNSTARTED || state === 150) return false;
-      
-      return true;
-    } catch (error) {
-      return false;
-    }
-  };
+  }
 
   // Toggle video play/pause
   const togglePlayPause = (): void => {
