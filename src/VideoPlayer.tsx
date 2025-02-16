@@ -210,16 +210,14 @@ const VideoPlayer: React.FC = () => {
             />
             {currentChannel !== 'MEALTIME' && (
               <>
-                {/* Click overlay for most of the video area */}
+                {/* Click overlay with gap for ad skip button */}
                 <div 
                   className="absolute inset-0 z-10" 
-                  style={{ pointerEvents: 'auto' }}
+                  style={{ 
+                    pointerEvents: 'auto',
+                    clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 112px), calc(100% - 144px) calc(100% - 112px), calc(100% - 144px) 100%, 0 100%)'
+                  }}
                   onClick={togglePlayPause}
-                />
-                {/* Gap for ad skip button */}
-                <div 
-                  className="absolute bottom-0 right-0 w-36 h-28 z-0"
-                  style={{ pointerEvents: 'none' }}
                 />
               </>
             )}
