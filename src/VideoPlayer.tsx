@@ -13,7 +13,7 @@ interface ShadowStyle extends React.CSSProperties {
 const VideoPlayer: React.FC = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // YouTube playlist ID - replace with your own
+  // YouTube playlist ID 
   const CHANNEL_PLAYLISTS = {
     BRAINROT: 'PLGuEiIpCwgO1N8uHEq-v88e0_PPDhQJEu',
     FURRY: 'PLGuEiIpCwgO0SQFM6hVw5dK3wrCaMLYxb',
