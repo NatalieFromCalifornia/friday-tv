@@ -33,8 +33,8 @@ body {
   --color-hover-light: #e5e7eb;         /* gray-200 */
 
   /* Dark theme colors */
-  --color-bg-primary-dark: #111827;     /* gray-900 */
-  --color-bg-secondary-dark: #1f2937;   /* gray-800 */
+  --color-bg-primary-dark: rgb(24, 32, 49);     /* gray-900 */
+  --color-bg-secondary-dark: #2d394a;   /* gray-800 */
   --color-text-primary-dark: #ffffff;   /* white */
   --color-hover-dark: #374151;         /* gray-700 */
 

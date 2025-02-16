@@ -14,7 +14,11 @@ const VideoPlayer: React.FC = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   // YouTube playlist ID - replace with your own
-  const PLAYLIST_ID = 'PLGuEiIpCwgO1N8uHEq-v88e0_PPDhQJEu';
+  const CHANNEL_PLAYLISTS = {
+    BRAINROT: 'PLGuEiIpCwgO1N8uHEq-v88e0_PPDhQJEu',
+    FURRY: 'PLGuEiIpCwgO0SQFM6hVw5dK3wrCaMLYxb',
+    MEALTIME: 'PLGuEiIpCwgO3WAnILpPhMg0SaqeS6DPiF'
+  };
   
   // State management
   const [darkMode, setDarkMode] = useState<boolean>(false);
@@ -22,7 +26,9 @@ const VideoPlayer: React.FC = () => {
   const [volume, setVolume] = useState<number>(5.0);
   const [player, setPlayer] = useState<YT.Player | null>(null);
   const [playedVideos, setPlayedVideos] = useState<string[]>([]);
-  const [currentChannel, setCurrentChannel] = useState<string>('BRAINROT')
+
+  type ChannelType = 'BRAINROT' | 'FURRY' | 'MEALTIME';
+  const [currentChannel, setCurrentChannel] = useState<ChannelType>('BRAINROT')
 
   // Initialize YouTube API
   useEffect(() => {
@@ -38,7 +44,7 @@ const VideoPlayer: React.FC = () => {
   }, []);
 
   // Initialize YouTube player
-  const initializePlayer = (): void => {
+  const initializePlayer = (channelToLoad?: keyof typeof CHANNEL_PLAYLISTS): void => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -48,15 +54,16 @@ const VideoPlayer: React.FC = () => {
       width: '100%',
       playerVars: {
         listType: 'playlist',
-        list: PLAYLIST_ID,
-        controls: 0,
+        list: CHANNEL_PLAYLISTS[channelToLoad || currentChannel],
+        controls: (channelToLoad || currentChannel) === 'MEALTIME' ? 1 : 0,
         showinfo: 0, 
         rel: 0,
         fs: 0,
         disablekb: 1,
         playsinline: 1,
         autoplay: 0,
-        cc_load_policy: 0,
+        cc_load_policy: 1,
+        cc_lang_pref: 'en',
       },
       events: {
         onReady: (event: YT.PlayerEvent) => {
@@ -113,6 +120,21 @@ const VideoPlayer: React.FC = () => {
     if (player) {
       player.setVolume(clampedVolume * 10);
     }
+  };
+
+
+  const switchChannel = (newChannel: keyof typeof CHANNEL_PLAYLISTS): void => {
+    // Destroy current player if it exists
+    if (player) {
+      player.destroy();
+      setPlayer(null);
+    }
+    
+    setCurrentChannel(newChannel);
+    setPlayedVideos([]); // Reset played videos for new channel
+    
+    // Reinitialize player with the new channel
+    initializePlayer(newChannel);
   };
 
   // Define shadow styles
@@ -187,11 +209,13 @@ const VideoPlayer: React.FC = () => {
               id="youtube-player" 
               className="absolute inset-0 w-full h-full"
             />
-            <div 
-              className="absolute inset-0 z-10" 
-              style={{ pointerEvents: 'auto' }}
-              onClick={togglePlayPause}
-            />
+            {currentChannel !== 'MEALTIME' && (
+              <div 
+                className="absolute inset-0 z-10" 
+                style={{ pointerEvents: 'auto' }}
+                onClick={togglePlayPause}
+              />
+            )}
           </div>
         </div>
 
@@ -257,7 +281,7 @@ const VideoPlayer: React.FC = () => {
 
               <div className="flex gap-2 shrink-0">
                 <button
-                  onClick={()=> setCurrentChannel('BRAINROT')}
+                  onClick={()=> switchChannel('BRAINROT')}
                   className="w-10 h-10 rounded-lg transition-colors hover:brightness-95 active:brightness-90 flex items-center justify-center"
                   style={styles.control}
                 >
@@ -265,7 +289,7 @@ const VideoPlayer: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={()=> setCurrentChannel('FURRY')}
+                  onClick={()=> switchChannel('FURRY')}
                   className="w-10 h-10 rounded-lg transition-colors hover:brightness-95 active:brightness-90 flex items-center justify-center"
                   style={styles.control}
                 >
@@ -273,7 +297,7 @@ const VideoPlayer: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={()=> setCurrentChannel('MEALTIME')}
+                  onClick={()=> switchChannel('MEALTIME')}
                   className="w-10 h-10 rounded-lg transition-colors hover:brightness-95 active:brightness-90 flex items-center justify-center"
                   style={styles.control}
                 >
