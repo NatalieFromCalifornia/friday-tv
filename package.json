@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://nataliefromcalifornia.github.io/friday-tv",
+  "homepage": "https://nataliefromcalifornia.github.io/friday-tv/",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
